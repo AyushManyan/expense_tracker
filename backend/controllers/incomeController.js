@@ -45,7 +45,10 @@ exports.getAllIncome = async (req, res) => {
 // delete income
 exports.deleteIncome = async (req, res) => {
     try{
-        
+        const checkIncome = await Income.findById(req.params.id);
+        if(!checkIncome){
+            return res.status(404).json({message: "Income not found"});
+        }
         await Income.findOneAndDelete(req.params.id);
         res.status(200).json({message: "Income deleted successfully"});
     }catch(error){
