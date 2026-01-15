@@ -1,16 +1,20 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import AuthLayout from '../../components/Layout/AuthLayout'
 import Input from '../../components/Inputs/Input'
 import { validateEmail } from '../../utils/helper'
+import axiosInstance from '../../utils/axiosInstance'
+import { API_PATHS } from '../../utils/apiPath'
 
 const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
 
+  const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+
+  const handleLogin = async (e) => {
     e.preventDefault();
     // Simple validation
     if(!validateEmail(email)){
@@ -21,9 +25,27 @@ const Login = () => {
       setError("Please enter your password.");
       return;
     }
-    setError(null);
+    setError("");
     // Proceed with login logic
-    console.log("Logging in with", { email, password });
+
+    try{
+      const response = await axiosInstance.post(API_PATHS.AUTH.LOGIN, {
+        email,
+        password
+      });
+
+      const { token, user } = response.data;
+      if(token){
+        localStorage.setItem('token', token);
+        navigate("/dashboard");
+      }
+    }catch(error){
+      if(error.response && error.response.data.message){
+        setError(error.response.data.message);
+      }else{
+        setError("Something went wrong. Please try again.");
+      }
+    }
   }  
 
   return (
