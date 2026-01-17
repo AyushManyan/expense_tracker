@@ -1,6 +1,6 @@
 import React from 'react'
 
-import{
+import {
   BrowserRouter as Router,
   Routes,
   Route,
@@ -11,20 +11,27 @@ import SignUp from './pages/Auth/SignUp'
 import Income from './pages/Dashboard/Income'
 import Home from './pages/Dashboard/Home'
 import Expense from './pages/Dashboard/Expense'
+import UserProvider from './context/userContext'
 
 const App = () => {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Root/>} />
-        <Route path="/dashboard" element={<Home/>} />
-        <Route path="/login" element={<Login/>} />
-        <Route path="/signUp" element={<SignUp/>} />
-        <Route path="/income" element={<Income/>} />
-        <Route path="/expense" element={<Expense/>} />
+    <UserProvider>
 
-      </Routes>
-    </Router>
+      <div>
+
+        <Router>
+          <Routes>
+            <Route path="/" element={<Root />} />
+            <Route path="/dashboard" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signUp" element={<SignUp />} />
+            <Route path="/income" element={<Income />} />
+            <Route path="/expense" element={<Expense />} />
+
+          </Routes>
+        </Router>
+      </div>
+    </UserProvider>
   )
 }
 

@@ -1,9 +1,13 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import AuthLayout from '../../components/Layout/AuthLayout'
 import Input from '../../components/Inputs/Input'
 import { validateEmail } from '../../utils/helper'
 import ProfilePhotoSelector from '../../components/Inputs/ProfilePhotoSelector'
+import axiosInstance from '../../utils/axiosInstance'
+import { API_PATHS } from '../../utils/apiPath'
+import { UserContext } from '../../context/userContext'
+import uploadImage from '../../utils/uploadImage'
 const SignUp = () => {
   const [profilePic, setProfilePic] = useState(null);
   const [fullName, setFullName] = useState('');
@@ -12,11 +16,13 @@ const SignUp = () => {
   const [confirmPassword, setConfirmPassword] = useState('')
 
   const [error, setError] = useState(null)
+
+  const {updateUser} = useContext(UserContext);
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => { 
     e.preventDefault();
-    let profilePicUrl = '';
     // Simple validation
     if(!fullName){
       setError("Please enter your full name.");
@@ -43,10 +49,37 @@ const SignUp = () => {
       return;
     }
     setError(null);
-    // Proceed with signup logic
-    console.log("Signing up with", { profilePic, fullName, email, password });
-    // After successful signup, navigate to login or dashboard
-    navigate('/login');
+    
+    // signup api
+    try {
+
+      // upload image if present
+      let profileImageUrl;
+      if(profilePic){
+        const imgUploadRes = await uploadImage(profilePic);
+        profileImageUrl = imgUploadRes.imageUrl || "";
+      }
+
+      const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER,{
+        fullName,
+        email,
+        password,
+        profileImageUrl
+      });
+
+      const {token, user} = response.data;
+      if(token){
+        localStorage.setItem("token",token);
+        updateUser(user);
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      if(error.response && error.response.data.message){
+        setError(error.response.data.message);
+      }else{
+        setError("Something went Wrong. Please try again.");
+      }
+    }
   }
 
   return (
@@ -73,7 +106,7 @@ const SignUp = () => {
             />
             <Input
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value.toLowerCase())}
               type="text"
               label="Email Address"
               placeholder="Enter your email"
