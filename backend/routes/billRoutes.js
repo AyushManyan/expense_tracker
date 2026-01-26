@@ -11,6 +11,6 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
 });
 
-router.post("/scan", upload.single("bill"), scanBillController);
+router.post("/scan", protect, upload.single("bill"), scanBillController);
 
 module.exports = router;
